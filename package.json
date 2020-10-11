@@ -1,0 +1,21 @@
+{
+  "name": "back",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./app.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "~4.16.1",
+    "express-graphql": "^0.11.0",
+    "express-jwt": "^6.0.0",
+    "graphql": "^15.3.0",
+    "graphql-iso-date": "^3.6.1",
+    "jwks-rsa": "^1.10.1",
+    "mongoose": "^5.10.7"
+  },
+  "devDependencies": {
+    "dotenv": "^8.2.0 "
+  }
+}
