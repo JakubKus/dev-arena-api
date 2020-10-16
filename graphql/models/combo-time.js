@@ -4,8 +4,7 @@ const Schema = mongo.Schema;
 const schema = new Schema({
   nickname: String,
   value: Number,
-  establishedOn: Date,
-  category: Number
+  establishedOn: Date
 });
 
-module.exports = mongo.model('highscores', schema);
+module.exports = mongo.model('comboTimes', schema);

@@ -1,15 +1,13 @@
-const { GraphQLFloat, GraphQLID, GraphQLObjectType, GraphQLString } = require('graphql');
+const { GraphQLInt, GraphQLID, GraphQLObjectType, GraphQLString } = require('graphql');
 const { GraphQLDateTime } = require ('graphql-iso-date');
-const scoreCategoryType = require ('./scoreCategoryType');
 
 const highscoreType = new GraphQLObjectType({
   name: 'highscores',
   fields: () => ({
     id: { type: GraphQLID },
     nickname: { type: GraphQLString },
-    value: { type: GraphQLFloat },
+    value: { type: GraphQLInt },
     establishedOn: { type: GraphQLDateTime },
-    category: { type: scoreCategoryType }
   })
 });
 
