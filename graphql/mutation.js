@@ -14,14 +14,16 @@ const Enemy = require('./models/enemy');
 const enemyType = require('./types/enemyType');
 const Developer = require('./models/developer');
 const developerType = require('./types/developerType');
-const Highscore = require('./models/highscore');
+const ComboTime = require('./models/combo-time');
+const WonFight = require('./models/won-fight');
 const highscoreType = require('./types/highscoreType');
-const scoreCategoryType = require('./types/scoreCategoryType');
+const Player = require('./models/player');
+const playerType = require('./types/playerType');
 
 const mutation = new GraphQLObjectType({
   name: 'Mutation',
   fields: {
-    addClothing: {
+    addClothing:  {
       type: clothingType,
       args: {
         name: { type: new GraphQLNonNull(GraphQLString) },
@@ -29,20 +31,12 @@ const mutation = new GraphQLObjectType({
         imageUrl: { type: new GraphQLNonNull(GraphQLString) },
         bodyPart: { type: new GraphQLNonNull(bodyPartType) }
       },
-      resolve(parent, args) {
-        const clothing = new Clothing({
-          name: args.name,
-          price: args.price,
-          imageUrl: args.imageUrl,
-          bodyPart: args.bodyPart
-        });
-        return clothing.save();
-      }
+      resolve: (parent, { name, price, imageUrl, bodyPart }) =>
+        Clothing.create({ name, price, imageUrl,bodyPart })
     },
     addEnemy: {
       type: enemyType,
       args: {
-        level: { type: new GraphQLNonNull(GraphQLInt) },
         name: { type: new GraphQLNonNull(GraphQLString) },
         hp: { type: new GraphQLNonNull(GraphQLInt) },
         damage: {
@@ -58,18 +52,8 @@ const mutation = new GraphQLObjectType({
         quotes: { type: new GraphQLNonNull(new GraphQLList(GraphQLString)) },
         avatarUrl: { type: new GraphQLNonNull(GraphQLString) }
       },
-      resolve(parents, args) {
-        const enemy = new Enemy({
-          level: args.level,
-          name: args.name,
-          hp: args.hp,
-          damage: args.damage,
-          attackSpeed: args.attackSpeed,
-          quotes: args.quotes,
-          avatarUrl: args.avatarUrl
-        });
-        return enemy.save();
-      }
+      resolve: (parents, { name, hp, damage, attackSpeed, quotes, avatarUrl }) =>
+        Enemy.create({ name, hp, damage, attackSpeed, quotes, avatarUrl })
     },
     addDeveloper: {
       type: developerType,
@@ -89,56 +73,84 @@ const mutation = new GraphQLObjectType({
         avatarUrl: { type: new GraphQLNonNull(GraphQLString) },
         weaponUrl: { type: new GraphQLNonNull(GraphQLString) }
       },
-      resolve(parents, args) {
-        const developer = new Developer({
-          name: args.name,
-          price: args.price,
-          hp: args.hp,
-          damage: args.damage,
-          avatarUrl: args.avatarUrl,
-          weaponUrl: args.weaponUrl
-        });
-        return developer.save();
-        // return await Developer.create({})
-      }
+      resolve: (parents, { name, price, hp, damage, avatarUrl, weaponUrl }) =>
+        Developer.create({ name, price, hp, damage, avatarUrl, weaponUrl })
     },
-    addHighscore: {
+    addComboTime: {
       type: highscoreType,
       args: {
         nickname: { type: new GraphQLNonNull(GraphQLString) },
-        value: { type: new GraphQLNonNull(GraphQLFloat) },
-        category: { type: new GraphQLNonNull(scoreCategoryType) }
+        value: { type: new GraphQLNonNull(GraphQLInt) }
       },
-      async resolve(parents, args) {
-        const highscore = new Highscore({
-          nickname: args.nickname,
-          value: args.value,
-          establishedOn: new Date(),
-          category: args.category
+      async resolve(parents, { nickname, value }) {
+        const comboTime = new ComboTime({
+          nickname,
+          value,
+          establishedOn: new Date()
         });
-        let highscoresOfCategory = await Highscore.find({ category: args.category });
-        highscoresOfCategory = highscoresOfCategory.concat(highscore);
-        if (highscoresOfCategory.length <= 3) {
-          return highscore.save();
-        }
-        const { nickname, value, establishedOn } = highscore;
-
-        const categoryName = scoreCategoryType.serialize(args.category);
-        const boundaryDirection = categoryName === 'combo' ? 'max' : 'min'
-        const boundaryHighscoreValue = Math[boundaryDirection](...highscoresOfCategory.map(x => x.value));
-        const boundaryHighscores = highscoresOfCategory.filter(x => x.value === boundaryHighscoreValue);
-        let { id } = boundaryHighscores[0];
-
-        if (boundaryHighscores.length > 1) {
-          const latestTimestamp = Math.max(...boundaryHighscores.map(x => +x.establishedOn));
-          const latestIndex = highscoresOfCategory.findIndex(x => +x.establishedOn === latestTimestamp);
-          id = highscoresOfCategory[latestIndex].id;
+        let comboTimes = await ComboTime.find();
+        if (comboTimes.length < 10) {
+          return comboTime.save();
         }
 
-        return Highscore.findByIdAndUpdate(id, { nickname, value, establishedOn });
+        comboTimes = comboTimes.concat(comboTime);
+        const LongestComboTime = Math.max(...comboTimes.map(x => x.value));
+        const id = getIdToUpdate(LongestComboTime, comboTimes)
+        return ComboTime.findByIdAndUpdate(id, { nickname, value, establishedOn: comboTime.establishedOn });
       }
+    },
+    addWonFight: {
+      type: highscoreType,
+      args: {
+        nickname: { type: new GraphQLNonNull(GraphQLString) },
+        value: { type: new GraphQLNonNull(GraphQLInt) }
+      },
+      async resolve(parents, { nickname, value }) {
+        const wonFight = new WonFight({
+          nickname,
+          value,
+          establishedOn: new Date()
+        });
+        let wonFights = await WonFight.find();
+        if (wonFights.length < 10) {
+          return wonFight.save();
+        }
+
+        wonFights = wonFights.concat(wonFight);
+        const lowestWonFight = Math.min(...wonFights.map(x => x.value));
+        const id = getIdToUpdate(lowestWonFight, wonFights);
+        return WonFight.findByIdAndUpdate(id, { nickname, value, establishedOn: wonFight.establishedOn });
+      }
+    },
+    addPlayer: {
+      type: playerType,
+      args: {
+        nickname: { type: GraphQLString },
+        mail: { type: GraphQLString },
+        cash: { type: GraphQLFloat },
+        wonFights: { type: GraphQLInt },
+        comboTime: { type: GraphQLInt },
+        chosenDevId: { type: GraphQLString },
+        equippedIds: { type: new GraphQLList(GraphQLString) },
+        boughtIds: { type: new GraphQLList(GraphQLString) }
+      },
+      resolve: (parent, { nickname, mail, cash, wonFights, comboTime, chosenDevId, equippedIds, boughtIds }) =>
+        Player.create({ nickname, mail, cash, wonFights, comboTime, chosenDevId, equippedIds, boughtIds })
     }
   }
 });
+
+const getIdToUpdate = (boundaryValue, values) => {
+  const boundaryValues = values.filter(x => x.value === boundaryValue);
+  let { id } = boundaryValues[0];
+
+  if (boundaryValues.length > 1) {
+    const latestTimestamp = Math.max(...boundaryValues.map(x => +x.establishedOn));
+    const latestIndex = values.findIndex(x => +x.establishedOn === latestTimestamp);
+    id = values[latestIndex].id;
+  }
+
+  return id;
+}
 
 module.exports = mutation;

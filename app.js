@@ -28,7 +28,7 @@ const jwtCheck = jwt({
 });
 
 app.use(cors());
-//app.use(jwtCheck);
+app.use(jwtCheck);
 
 const schema = new GraphQLSchema({
   mutation,
