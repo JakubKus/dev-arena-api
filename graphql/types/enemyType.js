@@ -4,7 +4,6 @@ const enemyType = new GraphQLObjectType({
   name: 'enemy',
   fields: () => ({
     id: { type: GraphQLID },
-    level: { type: GraphQLInt },
     name: { type: GraphQLString },
     hp: { type: GraphQLInt },
     damage: {

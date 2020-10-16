@@ -2,7 +2,6 @@ const mongo = require('mongoose');
 const Schema = mongo.Schema;
 
 const schema = new Schema({
-  level: Number,
   name: String,
   hp: Number,
   damage: {
