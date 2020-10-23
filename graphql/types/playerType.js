@@ -5,7 +5,7 @@ const playerType = new GraphQLObjectType({
   fields: () => ({
     id: { type: GraphQLID },
     nickname: { type: GraphQLString },
-    mail: { type: GraphQLString },
+    email: { type: GraphQLString },
     cash: { type: GraphQLFloat },
     wonFights: { type: GraphQLInt },
     comboTime: { type: GraphQLInt },

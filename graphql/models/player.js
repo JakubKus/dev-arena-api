@@ -3,7 +3,7 @@ const Schema = mongo.Schema;
 
 const schema = new Schema({
   nickname: String,
-  mail: String,
+  email: String,
   cash: Number,
   wonFights: Number,
   comboTime: Number,
