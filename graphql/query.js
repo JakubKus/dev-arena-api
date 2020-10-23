@@ -19,17 +19,17 @@ const query = new GraphQLObjectType({
       args: {
         ids: { type: new GraphQLNonNull(new GraphQLList(GraphQLID)) }
       },
-      resolve: (parent, { ids }) => Clothing.find({ _id: { $in: ids }})
+      resolve: (parent, { ids }, { isAuth }) => isAuth ? Clothing.find({ _id: { $in: ids } }) : null
     },
     allClothing: {
       type: new GraphQLList(clothingType),
-      resolve: (parent, args) => Clothing.find()
+      resolve: (parent, args, { isAuth }) => isAuth ? Clothing.find() : null
     },
     randomEnemy: {
       type: enemyType,
-      async resolve(parent, args) {
+      async resolve() {
         const enemiesNumber = await Enemy.countDocuments();
-        const enemiesToSkip =  Math.floor(Math.random() * enemiesNumber);
+        const enemiesToSkip = Math.floor(Math.random() * enemiesNumber);
         return Enemy.findOne().skip(enemiesToSkip);
       }
     },
@@ -42,22 +42,22 @@ const query = new GraphQLObjectType({
     },
     allDevelopers: {
       type: new GraphQLList(developerType),
-      resolve: (parent, args) => Developer.find()
+      resolve: (parent, args, { isAuth }) => isAuth ? Developer.find() : null
     },
     comboTimes: {
       type: new GraphQLList(highscoreType),
-      resolve: (parent, args) => ComboTime.find().sort({ value: 1 })
+      resolve: () => ComboTime.find().sort({ value: 1 })
     },
     wonFights: {
       type: new GraphQLList(highscoreType),
-      resolve: (parent, args) => WonFight.find().sort({ value: -1 })
+      resolve: () => WonFight.find().sort({ value: -1 })
     },
     player: {
       type: playerType,
       args: {
-        mail: { type: new GraphQLNonNull(GraphQLString) }
+        email: { type: new GraphQLNonNull(GraphQLString) }
       },
-      resolve: (parent, { mail }) => Player.findOne({ mail })
+      resolve: (parent, { email }, { isAuth }) => isAuth ? Player.findOne({ email }) : null
     }
   }
 });

@@ -23,7 +23,7 @@ const playerType = require('./types/playerType');
 const mutation = new GraphQLObjectType({
   name: 'Mutation',
   fields: {
-    addClothing:  {
+    addClothing: {
       type: clothingType,
       args: {
         name: { type: new GraphQLNonNull(GraphQLString) },
@@ -31,8 +31,7 @@ const mutation = new GraphQLObjectType({
         imageUrl: { type: new GraphQLNonNull(GraphQLString) },
         bodyPart: { type: new GraphQLNonNull(bodyPartType) }
       },
-      resolve: (parent, { name, price, imageUrl, bodyPart }) =>
-        Clothing.create({ name, price, imageUrl,bodyPart })
+      resolve: (parent, args, { isAuth }) => isAuth ? Clothing.create(args) : null
     },
     addEnemy: {
       type: enemyType,
@@ -52,8 +51,7 @@ const mutation = new GraphQLObjectType({
         quotes: { type: new GraphQLNonNull(new GraphQLList(GraphQLString)) },
         avatarUrl: { type: new GraphQLNonNull(GraphQLString) }
       },
-      resolve: (parents, { name, hp, damage, attackSpeed, quotes, avatarUrl }) =>
-        Enemy.create({ name, hp, damage, attackSpeed, quotes, avatarUrl })
+      resolve: (parent, args, { isAuth }) => isAuth ? Enemy.create(args) : null
     },
     addDeveloper: {
       type: developerType,
@@ -73,8 +71,7 @@ const mutation = new GraphQLObjectType({
         avatarUrl: { type: new GraphQLNonNull(GraphQLString) },
         weaponUrl: { type: new GraphQLNonNull(GraphQLString) }
       },
-      resolve: (parents, { name, price, hp, damage, avatarUrl, weaponUrl }) =>
-        Developer.create({ name, price, hp, damage, avatarUrl, weaponUrl })
+      resolve: (parent, args, { isAuth }) => isAuth ? Developer.create(args) : null
     },
     addComboTime: {
       type: highscoreType,
@@ -82,7 +79,8 @@ const mutation = new GraphQLObjectType({
         nickname: { type: new GraphQLNonNull(GraphQLString) },
         value: { type: new GraphQLNonNull(GraphQLInt) }
       },
-      async resolve(parents, { nickname, value }) {
+      async resolve(parent, { nickname, value }, { isAuth }) {
+        if (!isAuth) return null;
         const comboTime = new ComboTime({
           nickname,
           value,
@@ -95,7 +93,7 @@ const mutation = new GraphQLObjectType({
 
         comboTimes = comboTimes.concat(comboTime);
         const LongestComboTime = Math.max(...comboTimes.map(x => x.value));
-        const id = getIdToUpdate(LongestComboTime, comboTimes)
+        const id = getIdToUpdate(LongestComboTime, comboTimes);
         return ComboTime.findByIdAndUpdate(id, { nickname, value, establishedOn: comboTime.establishedOn });
       }
     },
@@ -105,7 +103,8 @@ const mutation = new GraphQLObjectType({
         nickname: { type: new GraphQLNonNull(GraphQLString) },
         value: { type: new GraphQLNonNull(GraphQLInt) }
       },
-      async resolve(parents, { nickname, value }) {
+      async resolve(parents, { nickname, value }, { isAuth }) {
+        if (!isAuth) return null;
         const wonFight = new WonFight({
           nickname,
           value,
@@ -126,7 +125,7 @@ const mutation = new GraphQLObjectType({
       type: playerType,
       args: {
         nickname: { type: GraphQLString },
-        mail: { type: GraphQLString },
+        email: { type: GraphQLString },
         cash: { type: GraphQLFloat },
         wonFights: { type: GraphQLInt },
         comboTime: { type: GraphQLInt },
@@ -134,8 +133,7 @@ const mutation = new GraphQLObjectType({
         equippedIds: { type: new GraphQLList(GraphQLString) },
         boughtIds: { type: new GraphQLList(GraphQLString) }
       },
-      resolve: (parent, { nickname, mail, cash, wonFights, comboTime, chosenDevId, equippedIds, boughtIds }) =>
-        Player.create({ nickname, mail, cash, wonFights, comboTime, chosenDevId, equippedIds, boughtIds })
+      resolve: (parent, args, { isAuth }) => isAuth ? Player.create(args) : null
     }
   }
 });
@@ -151,6 +149,6 @@ const getIdToUpdate = (boundaryValue, values) => {
   }
 
   return id;
-}
+};
 
 module.exports = mutation;
