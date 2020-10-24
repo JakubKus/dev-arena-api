@@ -54,7 +54,7 @@ app.use(
   graphqlHTTP(req => ({
     schema,
     graphiql: true,
-    context: { isAuth: req.isAuth !== false }
+    context: { isAuth: req.isAuth !== false },
   })),
 );
 

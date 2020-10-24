@@ -9,7 +9,7 @@ const schema = new Schema({
   comboTime: Number,
   chosenDevId: String,
   equippedIds: Array.of(String),
-  boughtIds: Array.of(String)
+  boughtIds: Array.of(String),
 });
 
 module.exports = mongo.model('player', schema);

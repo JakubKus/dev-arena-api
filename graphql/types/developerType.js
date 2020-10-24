@@ -1,24 +1,24 @@
-const { GraphQLFloat, GraphQLID, GraphQLObjectType, GraphQLString, GraphQLInt } = require('graphql');
+const { GraphQLFloat, GraphQLID, GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLNonNull } = require('graphql');
 
 const developerType = new GraphQLObjectType({
   name: 'developer',
-  fields: () => ({
-    id: { type: GraphQLID },
-    name: { type: GraphQLString },
-    price: { type: GraphQLFloat },
-    hp: { type: GraphQLInt },
+  fields: {
+    id: { type: GraphQLNonNull(GraphQLID) },
+    name: { type: GraphQLNonNull(GraphQLString) },
+    price: { type: GraphQLNonNull(GraphQLFloat) },
+    hp: { type: GraphQLNonNull(GraphQLInt) },
     damage: {
-      type: new GraphQLObjectType({
+      type: GraphQLNonNull(new GraphQLObjectType({
         name: 'developerDamage',
         fields: {
-          max: { type: GraphQLInt },
-          min: { type: GraphQLInt }
-        }
-      })
+          max: { type: GraphQLNonNull(GraphQLInt) },
+          min: { type: GraphQLNonNull(GraphQLInt) },
+        },
+      })),
     },
-    avatarUrl: { type: GraphQLString },
-    weaponUrl: { type: GraphQLString }
-  })
+    avatarUrl: { type: GraphQLNonNull(GraphQLString) },
+    weaponUrl: { type: GraphQLNonNull(GraphQLString) },
+  },
 });
 
 module.exports = developerType;

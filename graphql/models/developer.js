@@ -7,10 +7,10 @@ const schema = new Schema({
   hp: Number,
   damage: {
     max: Number,
-    min: Number
+    min: Number,
   },
   avatarUrl: String,
-  weaponUrl: String
+  weaponUrl: String,
 });
 
 module.exports = mongo.model('developers', schema);

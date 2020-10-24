@@ -5,7 +5,7 @@ const {
   GraphQLFloat,
   GraphQLInt,
   GraphQLList,
-  GraphQLInputObjectType
+  GraphQLInputObjectType,
 } = require('graphql');
 const Clothing = require('./models/clothing');
 const clothingType = require('./types/clothingType');
@@ -26,65 +26,65 @@ const mutation = new GraphQLObjectType({
     addClothing: {
       type: clothingType,
       args: {
-        name: { type: new GraphQLNonNull(GraphQLString) },
-        price: { type: new GraphQLNonNull(GraphQLFloat) },
-        imageUrl: { type: new GraphQLNonNull(GraphQLString) },
-        bodyPart: { type: new GraphQLNonNull(bodyPartType) }
+        name: { type: GraphQLNonNull(GraphQLString) },
+        price: { type: GraphQLNonNull(GraphQLFloat) },
+        imageUrl: { type: GraphQLNonNull(GraphQLString) },
+        bodyPart: { type: GraphQLNonNull(bodyPartType) },
       },
-      resolve: (parent, args, { isAuth }) => isAuth ? Clothing.create(args) : null
+      resolve: (parent, args, { isAuth }) => isAuth ? Clothing.create(args) : null,
     },
     addEnemy: {
       type: enemyType,
       args: {
-        name: { type: new GraphQLNonNull(GraphQLString) },
-        hp: { type: new GraphQLNonNull(GraphQLInt) },
+        name: { type: GraphQLNonNull(GraphQLString) },
+        hp: { type: GraphQLNonNull(GraphQLInt) },
         damage: {
-          type: new GraphQLNonNull(new GraphQLInputObjectType({
+          type: GraphQLNonNull(new GraphQLInputObjectType({
             name: 'enemyDamageInput',
             fields: {
-              max: { type: new GraphQLNonNull(GraphQLInt) },
-              min: { type: new GraphQLNonNull(GraphQLInt) }
-            }
-          }))
+              max: { type: GraphQLNonNull(GraphQLInt) },
+              min: { type: GraphQLNonNull(GraphQLInt) },
+            },
+          })),
         },
-        attackSpeed: { type: new GraphQLNonNull(GraphQLFloat) },
-        quotes: { type: new GraphQLNonNull(new GraphQLList(GraphQLString)) },
-        avatarUrl: { type: new GraphQLNonNull(GraphQLString) }
+        attackSpeed: { type: GraphQLNonNull(GraphQLFloat) },
+        quotes: { type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLString))) },
+        avatarUrl: { type: GraphQLNonNull(GraphQLString) },
       },
-      resolve: (parent, args, { isAuth }) => isAuth ? Enemy.create(args) : null
+      resolve: (parent, args, { isAuth }) => isAuth ? Enemy.create(args) : null,
     },
     addDeveloper: {
       type: developerType,
       args: {
-        name: { type: new GraphQLNonNull(GraphQLString) },
-        price: { type: new GraphQLNonNull(GraphQLFloat) },
-        hp: { type: new GraphQLNonNull(GraphQLInt) },
+        name: { type: GraphQLNonNull(GraphQLString) },
+        price: { type: GraphQLNonNull(GraphQLFloat) },
+        hp: { type: GraphQLNonNull(GraphQLInt) },
         damage: {
-          type: new GraphQLNonNull(new GraphQLInputObjectType({
+          type: GraphQLNonNull(new GraphQLInputObjectType({
             name: 'developerDamageInput',
             fields: {
-              max: { type: new GraphQLNonNull(GraphQLInt) },
-              min: { type: new GraphQLNonNull(GraphQLInt) }
-            }
-          }))
+              max: { type: GraphQLNonNull(GraphQLInt) },
+              min: { type: GraphQLNonNull(GraphQLInt) },
+            },
+          })),
         },
-        avatarUrl: { type: new GraphQLNonNull(GraphQLString) },
-        weaponUrl: { type: new GraphQLNonNull(GraphQLString) }
+        avatarUrl: { type: GraphQLNonNull(GraphQLString) },
+        weaponUrl: { type: GraphQLNonNull(GraphQLString) },
       },
-      resolve: (parent, args, { isAuth }) => isAuth ? Developer.create(args) : null
+      resolve: (parent, args, { isAuth }) => isAuth ? Developer.create(args) : null,
     },
     addComboTime: {
       type: highscoreType,
       args: {
-        nickname: { type: new GraphQLNonNull(GraphQLString) },
-        value: { type: new GraphQLNonNull(GraphQLInt) }
+        nickname: { type: GraphQLNonNull(GraphQLString) },
+        value: { type: GraphQLNonNull(GraphQLInt) },
       },
       async resolve(parent, { nickname, value }, { isAuth }) {
         if (!isAuth) return null;
         const comboTime = new ComboTime({
           nickname,
           value,
-          establishedOn: new Date()
+          establishedOn: new Date(),
         });
         let comboTimes = await ComboTime.find();
         if (comboTimes.length < 10) {
@@ -95,20 +95,20 @@ const mutation = new GraphQLObjectType({
         const LongestComboTime = Math.max(...comboTimes.map(x => x.value));
         const id = getIdToUpdate(LongestComboTime, comboTimes);
         return ComboTime.findByIdAndUpdate(id, { nickname, value, establishedOn: comboTime.establishedOn });
-      }
+      },
     },
     addWonFight: {
       type: highscoreType,
       args: {
-        nickname: { type: new GraphQLNonNull(GraphQLString) },
-        value: { type: new GraphQLNonNull(GraphQLInt) }
+        nickname: { type: GraphQLNonNull(GraphQLString) },
+        value: { type: GraphQLNonNull(GraphQLInt) },
       },
       async resolve(parents, { nickname, value }, { isAuth }) {
         if (!isAuth) return null;
         const wonFight = new WonFight({
           nickname,
           value,
-          establishedOn: new Date()
+          establishedOn: new Date(),
         });
         let wonFights = await WonFight.find();
         if (wonFights.length < 10) {
@@ -119,23 +119,23 @@ const mutation = new GraphQLObjectType({
         const lowestWonFight = Math.min(...wonFights.map(x => x.value));
         const id = getIdToUpdate(lowestWonFight, wonFights);
         return WonFight.findByIdAndUpdate(id, { nickname, value, establishedOn: wonFight.establishedOn });
-      }
+      },
     },
     addPlayer: {
       type: playerType,
       args: {
-        nickname: { type: GraphQLString },
-        email: { type: GraphQLString },
-        cash: { type: GraphQLFloat },
-        wonFights: { type: GraphQLInt },
-        comboTime: { type: GraphQLInt },
-        chosenDevId: { type: GraphQLString },
-        equippedIds: { type: new GraphQLList(GraphQLString) },
-        boughtIds: { type: new GraphQLList(GraphQLString) }
+        nickname: { type: GraphQLNonNull(GraphQLString) },
+        email: { type: GraphQLNonNull(GraphQLString) },
+        cash: { type: GraphQLNonNull(GraphQLFloat) },
+        wonFights: { type: GraphQLNonNull(GraphQLInt) },
+        comboTime: { type: GraphQLNonNull(GraphQLInt) },
+        chosenDevId: { type: GraphQLNonNull(GraphQLString) },
+        equippedIds: { type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLString))) },
+        boughtIds: { type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLString))) },
       },
-      resolve: (parent, args, { isAuth }) => isAuth ? Player.create(args) : null
-    }
-  }
+      resolve: (parent, args, { isAuth }) => isAuth ? Player.create(args) : null,
+    },
+  },
 });
 
 const getIdToUpdate = (boundaryValue, values) => {

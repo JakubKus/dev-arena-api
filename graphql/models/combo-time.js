@@ -4,7 +4,7 @@ const Schema = mongo.Schema;
 const schema = new Schema({
   nickname: String,
   value: Number,
-  establishedOn: Date
+  establishedOn: Date,
 });
 
 module.exports = mongo.model('comboTimes', schema);

@@ -5,8 +5,8 @@ const bodyPartType = new GraphQLEnumType({
   values: {
     top: { value: 0 },
     middle: { value: 1 },
-    bottom: { value: 2 }
-  }
+    bottom: { value: 2 },
+  },
 });
 
 module.exports = bodyPartType;

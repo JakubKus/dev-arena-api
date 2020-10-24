@@ -1,18 +1,19 @@
-const { GraphQLFloat, GraphQLID, GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLList } = require('graphql');
+const { GraphQLFloat, GraphQLID, GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLList, GraphQLNonNull }
+  = require('graphql');
 
 const playerType = new GraphQLObjectType({
   name: 'player',
-  fields: () => ({
-    id: { type: GraphQLID },
-    nickname: { type: GraphQLString },
-    email: { type: GraphQLString },
-    cash: { type: GraphQLFloat },
-    wonFights: { type: GraphQLInt },
-    comboTime: { type: GraphQLInt },
-    chosenDevId: { type: GraphQLString },
-    equippedIds: { type: new GraphQLList(GraphQLString) },
-    boughtIds: { type: new GraphQLList(GraphQLString) }
-  })
+  fields: {
+    id: { type: GraphQLNonNull(GraphQLID) },
+    nickname: { type: GraphQLNonNull(GraphQLString) },
+    email: { type: GraphQLNonNull(GraphQLString) },
+    cash: { type: GraphQLNonNull(GraphQLFloat) },
+    wonFights: { type: GraphQLNonNull(GraphQLInt) },
+    comboTime: { type: GraphQLNonNull(GraphQLInt) },
+    chosenDevId: { type: GraphQLNonNull(GraphQLID) },
+    equippedIds: { type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLID))) },
+    boughtIds: { type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLID))) },
+  },
 });
 
 module.exports = playerType;

@@ -6,11 +6,11 @@ const schema = new Schema({
   hp: Number,
   damage: {
     max: Number,
-    min: Number
+    min: Number,
   },
   attackSpeed: Number,
   quotes: Array.of(String),
-  avatarUrl: String
+  avatarUrl: String,
 });
 
 module.exports = mongo.model('enemies', schema);

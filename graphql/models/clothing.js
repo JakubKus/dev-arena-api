@@ -5,7 +5,7 @@ const schema = new Schema({
   name: String,
   price: Number,
   imageUrl: String,
-  bodyPart: Number
+  bodyPart: Number,
 });
 
 mongo.pluralize(null);
