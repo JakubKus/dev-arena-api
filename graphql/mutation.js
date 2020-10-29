@@ -6,6 +6,7 @@ const {
   GraphQLInt,
   GraphQLList,
   GraphQLInputObjectType,
+  GraphQLID,
 } = require('graphql');
 const Clothing = require('./models/clothing');
 const clothingType = require('./types/clothingType');
@@ -31,7 +32,7 @@ const mutation = new GraphQLObjectType({
         imageUrl: { type: GraphQLNonNull(GraphQLString) },
         bodyPart: { type: GraphQLNonNull(bodyPartType) },
       },
-      resolve: (parent, args, { isAuth }) => isAuth ? Clothing.create(args) : null,
+      resolve: (source, args, { isAuth }) => isAuth ? Clothing.create(args) : null,
     },
     addEnemy: {
       type: enemyType,
@@ -51,7 +52,7 @@ const mutation = new GraphQLObjectType({
         quotes: { type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLString))) },
         avatarUrl: { type: GraphQLNonNull(GraphQLString) },
       },
-      resolve: (parent, args, { isAuth }) => isAuth ? Enemy.create(args) : null,
+      resolve: (source, args, { isAuth }) => isAuth ? Enemy.create(args) : null,
     },
     addDeveloper: {
       type: developerType,
@@ -71,7 +72,7 @@ const mutation = new GraphQLObjectType({
         avatarUrl: { type: GraphQLNonNull(GraphQLString) },
         weaponUrl: { type: GraphQLNonNull(GraphQLString) },
       },
-      resolve: (parent, args, { isAuth }) => isAuth ? Developer.create(args) : null,
+      resolve: (source, args, { isAuth }) => isAuth ? Developer.create(args) : null,
     },
     addComboTime: {
       type: highscoreType,
@@ -79,22 +80,19 @@ const mutation = new GraphQLObjectType({
         nickname: { type: GraphQLNonNull(GraphQLString) },
         value: { type: GraphQLNonNull(GraphQLInt) },
       },
-      async resolve(parent, { nickname, value }, { isAuth }) {
+      resolve: async (source, { nickname, value, establishedOn = new Date() }, { isAuth }) => {
         if (!isAuth) return null;
-        const comboTime = new ComboTime({
-          nickname,
-          value,
-          establishedOn: new Date(),
-        });
-        let comboTimes = await ComboTime.find();
-        if (comboTimes.length < 10) {
-          return comboTime.save();
-        }
+        const args = { nickname, value, establishedOn };
+        const comboTimes = await ComboTime.find();
+        const [prevScore] = comboTimes.filter(x => x.nickname === nickname);
 
-        comboTimes = comboTimes.concat(comboTime);
-        const LongestComboTime = Math.max(...comboTimes.map(x => x.value));
-        const id = getIdToUpdate(LongestComboTime, comboTimes);
-        return ComboTime.findByIdAndUpdate(id, { nickname, value, establishedOn: comboTime.establishedOn });
+        if (prevScore) return value < prevScore.value ? ComboTime.findByIdAndUpdate(prevScore.id, args) : null;
+        if (comboTimes.length < 10) return ComboTime.create(args);
+
+        const longestComboTime = getBoundaryValue(comboTimes, 'max');
+        if (value >= longestComboTime) return null;
+        const [{ id }] = comboTimes.filter(x => x.value === longestComboTime);
+        return ComboTime.findByIdAndUpdate(id, args);
       },
     },
     addWonFight: {
@@ -103,22 +101,19 @@ const mutation = new GraphQLObjectType({
         nickname: { type: GraphQLNonNull(GraphQLString) },
         value: { type: GraphQLNonNull(GraphQLInt) },
       },
-      async resolve(parents, { nickname, value }, { isAuth }) {
+      resolve: async (source, { nickname, value, establishedOn = new Date() }, { isAuth }) => {
         if (!isAuth) return null;
-        const wonFight = new WonFight({
-          nickname,
-          value,
-          establishedOn: new Date(),
-        });
-        let wonFights = await WonFight.find();
-        if (wonFights.length < 10) {
-          return wonFight.save();
-        }
+        const args = { nickname, value, establishedOn };
+        const wonFights = await WonFight.find();
+        const [prevScore] = wonFights.filter(x => x.nickname === nickname);
 
-        wonFights = wonFights.concat(wonFight);
-        const lowestWonFight = Math.min(...wonFights.map(x => x.value));
-        const id = getIdToUpdate(lowestWonFight, wonFights);
-        return WonFight.findByIdAndUpdate(id, { nickname, value, establishedOn: wonFight.establishedOn });
+        if (prevScore) return value > prevScore.value ? WonFight.findByIdAndUpdate(prevScore.id, args) : null;
+        if (wonFights.length < 10) return WonFight.create(args);
+
+        const lowestWonFights = getBoundaryValue(wonFights, 'min');
+        if (value <= lowestWonFights) return null;
+        const [{ id }] = wonFights.filter(x => x.value === lowestWonFights);
+        return WonFight.findByIdAndUpdate(id, args);
       },
     },
     addPlayer: {
@@ -129,26 +124,51 @@ const mutation = new GraphQLObjectType({
         cash: { type: GraphQLNonNull(GraphQLFloat) },
         wonFights: { type: GraphQLNonNull(GraphQLInt) },
         comboTime: { type: GraphQLNonNull(GraphQLInt) },
-        chosenDevId: { type: GraphQLNonNull(GraphQLString) },
-        equippedIds: { type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLString))) },
-        boughtIds: { type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLString))) },
+        chosenDevId: { type: GraphQLNonNull(GraphQLID) },
+        equippedIds: { type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLID))) },
+        boughtIds: { type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLID))) },
       },
-      resolve: (parent, args, { isAuth }) => isAuth ? Player.create(args) : null,
+      resolve: (source, args, { isAuth }) => isAuth ? Player.create(args) : null,
+    },
+    updatePlayer: {
+      type: playerType,
+      args: {
+        nickname: { type: GraphQLNonNull(GraphQLString) },
+        cash: { type: GraphQLFloat },
+        wonFights: { type: GraphQLInt },
+        comboTime: { type: GraphQLInt },
+        chosenDevId: { type: GraphQLID },
+        boughtIds: { type: GraphQLList(GraphQLID) },
+      },
+      resolve: (source, { nickname, ...args }, { isAuth }) => (
+        isAuth ? Player.findOneAndUpdate({ nickname }, args) : null
+      ),
+    },
+    equipItem: {
+      type: playerType,
+      args: {
+        nickname: { type: GraphQLNonNull(GraphQLString) },
+        toEquipId: { type: GraphQLNonNull(GraphQLID) },
+        equippedIds: { type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLID))) },
+      },
+      resolve: async (source, { nickname, toEquipId, equippedIds }, { isAuth }) => {
+        if (!isAuth) return null;
+        if (equippedIds.length === 0) return Player.findOneAndUpdate({ nickname }, { equippedIds: [toEquipId] });
+
+        const { bodyPart } = await Clothing.findById(toEquipId);
+        const equippedOfType = await Clothing.findOne({ _id: { $in: equippedIds }, bodyPart });
+        if (!equippedOfType) {
+          return Player.findOneAndUpdate({ nickname }, { equippedIds: equippedIds.concat(toEquipId) });
+        }
+
+        const equippedClothingIndex = equippedIds.indexOf(equippedOfType.id);
+        equippedIds.splice(equippedClothingIndex, 1, toEquipId);
+        return Player.findOneAndUpdate({ nickname }, { equippedIds });
+      },
     },
   },
 });
 
-const getIdToUpdate = (boundaryValue, values) => {
-  const boundaryValues = values.filter(x => x.value === boundaryValue);
-  let { id } = boundaryValues[0];
-
-  if (boundaryValues.length > 1) {
-    const latestTimestamp = Math.max(...boundaryValues.map(x => +x.establishedOn));
-    const latestIndex = values.findIndex(x => +x.establishedOn === latestTimestamp);
-    id = values[latestIndex].id;
-  }
-
-  return id;
-};
+const getBoundaryValue = (values, operator) => Math[operator](...values.map(x => x.value));
 
 module.exports = mutation;
