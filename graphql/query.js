@@ -19,6 +19,7 @@ const query = new GraphQLObjectType({
       args: {
         ids: { type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLID))) },
       },
+      // TODO: check find $in null
       resolve: (source, { ids }, { isAuth }) => isAuth ? Clothing.find({ _id: { $in: ids } }) : null,
     },
     allClothing: {
@@ -33,12 +34,16 @@ const query = new GraphQLObjectType({
         return Enemy.findOne().skip(enemiesToSkip);
       },
     },
+    defaultDeveloper: {
+      type: developerType,
+      resolve: () => Developer.findOne({ name: 'Programmer' }),
+    },
     developer: {
       type: developerType,
       args: {
-        id: { type: GraphQLNonNull(GraphQLID) },
+        name: { type: GraphQLString },
       },
-      resolve: (source, { id }) => Developer.findOne({ _id: id }),
+      resolve: (source, { name }) => Developer.findOne({ name }),
     },
     allDevelopers: {
       type: GraphQLList(developerType),

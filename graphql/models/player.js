@@ -7,7 +7,7 @@ const schema = new Schema({
   cash: Number,
   wonFights: Number,
   comboTime: Number,
-  chosenDevId: String,
+  chosenDevName: String,
   equippedIds: Array.of(String),
   boughtIds: Array.of(String),
 });

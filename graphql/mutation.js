@@ -123,8 +123,7 @@ const mutation = new GraphQLObjectType({
         email: { type: GraphQLNonNull(GraphQLString) },
         cash: { type: GraphQLNonNull(GraphQLFloat) },
         wonFights: { type: GraphQLNonNull(GraphQLInt) },
-        comboTime: { type: GraphQLNonNull(GraphQLInt) },
-        chosenDevId: { type: GraphQLNonNull(GraphQLID) },
+        chosenDevName: { type: GraphQLNonNull(GraphQLString) },
         equippedIds: { type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLID))) },
         boughtIds: { type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLID))) },
       },
@@ -137,12 +136,15 @@ const mutation = new GraphQLObjectType({
         cash: { type: GraphQLFloat },
         wonFights: { type: GraphQLInt },
         comboTime: { type: GraphQLInt },
-        chosenDevId: { type: GraphQLID },
+        chosenDevName: { type: GraphQLString },
         boughtIds: { type: GraphQLList(GraphQLID) },
+        equippedIds: { type: GraphQLList(GraphQLID) },
       },
-      resolve: (source, { nickname, ...args }, { isAuth }) => (
-        isAuth ? Player.findOneAndUpdate({ nickname }, args) : null
-      ),
+      resolve: async (source, { nickname, ...args }, { isAuth }) => {
+        if (!isAuth) return null;
+        await Player.findOneAndUpdate({ nickname }, args);
+        return Player.findOne({ nickname });
+      },
     },
     equipItem: {
       type: playerType,
@@ -153,17 +155,22 @@ const mutation = new GraphQLObjectType({
       },
       resolve: async (source, { nickname, toEquipId, equippedIds }, { isAuth }) => {
         if (!isAuth) return null;
-        if (equippedIds.length === 0) return Player.findOneAndUpdate({ nickname }, { equippedIds: [toEquipId] });
+        if (equippedIds.length === 0) {
+          await Player.findOneAndUpdate({ nickname }, { equippedIds: [toEquipId] });
+          return Player.findOne({ nickname });
+        }
 
         const { bodyPart } = await Clothing.findById(toEquipId);
         const equippedOfType = await Clothing.findOne({ _id: { $in: equippedIds }, bodyPart });
         if (!equippedOfType) {
-          return Player.findOneAndUpdate({ nickname }, { equippedIds: equippedIds.concat(toEquipId) });
+          await Player.findOneAndUpdate({ nickname }, { equippedIds: equippedIds.concat(toEquipId) });
+          return Player.findOne({ nickname });
         }
 
         const equippedClothingIndex = equippedIds.indexOf(equippedOfType.id);
         equippedIds.splice(equippedClothingIndex, 1, toEquipId);
-        return Player.findOneAndUpdate({ nickname }, { equippedIds });
+        await Player.findOneAndUpdate({ nickname }, { equippedIds });
+        return Player.findOne({ nickname });
       },
     },
   },
