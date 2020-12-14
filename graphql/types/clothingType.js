@@ -3,7 +3,7 @@ const bodyPartType = require('./bodyPartType');
 
 const clothingType = new GraphQLObjectType({
   name: 'clothing',
-    fields: {
+  fields: {
     id: { type: GraphQLNonNull(GraphQLID) },
     name: { type: GraphQLNonNull(GraphQLString) },
     price: { type: GraphQLNonNull(GraphQLFloat) },

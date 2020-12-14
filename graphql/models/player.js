@@ -12,4 +12,4 @@ const schema = new Schema({
   boughtIds: Array.of(String),
 });
 
-module.exports = mongo.model('player', schema);
+module.exports = mongo.model('players', schema);
