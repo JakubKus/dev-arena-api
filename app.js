@@ -1,7 +1,7 @@
 const cors = require('cors');
 const express = require('express');
 const { graphqlHTTP } = require('express-graphql');
-const jwt = require('express-jwt');
+const { expressjwt: jwt } = require("express-jwt");
 const { GraphQLSchema } = require('graphql');
 const jwks = require('jwks-rsa');
 const mongo = require('mongoose');
