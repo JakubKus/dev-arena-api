@@ -1,7 +1,6 @@
-const mongo = require('mongoose');
-const Schema = mongo.Schema;
+const mongoose = require('mongoose');
 
-const schema = new Schema({
+const enemies = mongoose.Schema({
   name: String,
   hp: Number,
   damage: {
@@ -13,4 +12,4 @@ const schema = new Schema({
   avatarUrl: String,
 });
 
-module.exports = mongo.model('enemies', schema);
+module.exports = mongoose.model('enemies', enemies);

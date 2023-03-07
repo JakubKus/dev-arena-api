@@ -1,7 +1,6 @@
-const mongo = require('mongoose');
-const Schema = mongo.Schema;
+const mongoose = require('mongoose');
 
-const schema = new Schema({
+const players = mongoose.Schema({
   nickname: String,
   email: String,
   cash: Number,
@@ -12,4 +11,4 @@ const schema = new Schema({
   boughtIds: Array.of(String),
 });
 
-module.exports = mongo.model('players', schema);
+module.exports = mongoose.model('players', players);

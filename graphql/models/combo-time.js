@@ -1,10 +1,9 @@
-const mongo = require('mongoose');
-const Schema = mongo.Schema;
+const mongoose = require('mongoose');
 
-const schema = new Schema({
+const comboTimes = mongoose.Schema({
   nickname: String,
   value: Number,
   establishedOn: Date,
 });
 
-module.exports = mongo.model('comboTimes', schema);
+module.exports = mongoose.model('comboTimes', comboTimes);

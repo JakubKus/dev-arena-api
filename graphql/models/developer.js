@@ -1,7 +1,6 @@
-const mongo = require('mongoose');
-const Schema = mongo.Schema;
+const mongoose = require('mongoose');
 
-const schema = new Schema({
+const developers = mongoose.Schema({
   name: String,
   price: Number,
   hp: Number,
@@ -13,4 +12,4 @@ const schema = new Schema({
   weaponUrl: String,
 });
 
-module.exports = mongo.model('developers', schema);
+module.exports = mongoose.model('developers', developers);

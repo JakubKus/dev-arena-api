@@ -1,12 +1,11 @@
-const mongo = require('mongoose');
-const Schema = mongo.Schema;
+const mongoose = require('mongoose');
 
-const schema = new Schema({
+const clothing = mongoose.Schema({
   name: String,
   price: Number,
   imageUrl: String,
   bodyPart: Number,
 });
 
-mongo.pluralize(null);
-module.exports = mongo.model('clothing', schema);
+mongoose.pluralize(null);
+module.exports = mongoose.model('clothing', clothing);
