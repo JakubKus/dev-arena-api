@@ -6,6 +6,7 @@ const clothing = require('./clothing');
 const query = new GraphQLObjectType({
   name: 'Query',
   fields: {
+    ...player.queries,
     ...fight.queries,
     ...clothing.queries,
   },

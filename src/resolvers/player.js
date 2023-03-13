@@ -3,6 +3,20 @@ const { playerType } = require('../gql-types/playerType');
 const { Player } = require('../db-models/player');
 const { validateAuth } = require('../utils');
 
+const player = {
+  type: playerType,
+  args: {
+    email: { type: GraphQLNonNull(GraphQLString) },
+  },
+  resolve: (source, args, ctx) => {
+    validateAuth(ctx);
+
+    const { email } = args;
+
+    return Player.findOne({ email });
+  }
+};
+
 const addPlayer = {
   type: playerType,
   args: {
@@ -46,9 +60,14 @@ const updatePlayer = {
   },
 };
 
+const queries = {
+  player,
+};
+
+
 const mutations = {
   addPlayer,
   updatePlayer,
 };
 
-module.exports = { mutations };
+module.exports = { queries, mutations };
