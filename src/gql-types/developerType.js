@@ -21,4 +21,4 @@ const developerType = new GraphQLObjectType({
   },
 });
 
-module.exports = developerType;
+module.exports = { developerType };

@@ -6,4 +6,4 @@ const wonFights = mongoose.Schema({
   establishedOn: Date,
 });
 
-module.exports = mongoose.model('wonFights', wonFights);
+module.exports = { WonFight: mongoose.model('wonFights', wonFights) };

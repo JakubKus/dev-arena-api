@@ -1,5 +1,5 @@
 const { GraphQLFloat, GraphQLID, GraphQLObjectType, GraphQLString, GraphQLNonNull } = require('graphql');
-const bodyPartType = require('./bodyPartType');
+const { bodyPartType } = require('./bodyPartType');
 
 const clothingType = new GraphQLObjectType({
   name: 'clothing',
@@ -12,4 +12,4 @@ const clothingType = new GraphQLObjectType({
   },
 });
 
-module.exports = clothingType;
+module.exports = { clothingType };

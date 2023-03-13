@@ -11,4 +11,4 @@ const highscoreType = new GraphQLObjectType({
   },
 });
 
-module.exports = highscoreType;
+module.exports = { highscoreType };

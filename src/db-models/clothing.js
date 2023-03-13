@@ -8,4 +8,4 @@ const clothing = mongoose.Schema({
 });
 
 mongoose.pluralize(null);
-module.exports = mongoose.model('clothing', clothing);
+module.exports = { Clothing: mongoose.model('clothing', clothing) };

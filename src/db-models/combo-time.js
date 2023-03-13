@@ -6,4 +6,4 @@ const comboTimes = mongoose.Schema({
   establishedOn: Date,
 });
 
-module.exports = mongoose.model('comboTimes', comboTimes);
+module.exports = { ComboTime: mongoose.model('comboTimes', comboTimes) };

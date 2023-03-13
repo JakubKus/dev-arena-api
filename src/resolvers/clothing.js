@@ -1,9 +1,30 @@
 const { GraphQLFloat, GraphQLID, GraphQLList, GraphQLNonNull, GraphQLString } = require('graphql');
-const clothingType = require('../types/clothingType');
-const bodyPartType = require('../types/bodyPartType');
-const playerType = require('../types/playerType');
-const Player = require('../models/player');
-const Clothing = require('../models/clothing');
+const { clothingType } = require('../gql-types/clothingType');
+const { bodyPartType } = require('../gql-types/bodyPartType');
+const { playerType } = require('../gql-types/playerType');
+const { Player } = require('../db-models/player');
+const { Clothing } = require('../db-models/clothing');
+const { validateAuth } = require('../utils');
+
+const clothing = {
+  type: GraphQLList(clothingType),
+  args: {
+    ids: { type: GraphQLList(GraphQLNonNull(GraphQLID)) },
+  },
+  resolve: (source, args, ctx) => {
+    validateAuth(ctx);
+    const { ids } = args;
+    return Clothing.find({ _id: { $in: ids } });
+  },
+};
+
+const allClothing = {
+  type: GraphQLList(clothingType),
+  resolve: (source, args, ctx) => {
+    validateAuth(ctx);
+    return Clothing.find();
+  },
+};
 
 const addClothing = {
   type: clothingType,
@@ -13,7 +34,10 @@ const addClothing = {
     imageUrl: { type: GraphQLNonNull(GraphQLString) },
     bodyPart: { type: GraphQLNonNull(bodyPartType) },
   },
-  resolve: (source, args, { isAuth }) => isAuth ? Clothing.create(args) : null,
+  resolve: (source, args, ctx) => {
+    validateAuth(ctx);
+    return Clothing.create(args);
+  },
 };
 
 const equipItem = {
@@ -23,8 +47,10 @@ const equipItem = {
     toEquipId: { type: GraphQLNonNull(GraphQLID) },
     equippedIds: { type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLID))) },
   },
-  resolve: async (source, { nickname, toEquipId, equippedIds }, { isAuth }) => {
-    if (!isAuth) return null;
+  resolve: async (source, args, ctx) => {
+    validateAuth(ctx);
+    const { nickname, toEquipId, equippedIds } = args;
+
     if (equippedIds.length === 0) {
       await Player.findOneAndUpdate({ nickname }, { equippedIds: [toEquipId] });
       return Player.findOne({ nickname });
@@ -44,7 +70,14 @@ const equipItem = {
   },
 };
 
-module.exports = {
+const queries = {
+  clothing,
+  allClothing,
+}
+
+const mutations = {
   addClothing,
   equipItem,
 };
+
+module.exports = { queries, mutations };

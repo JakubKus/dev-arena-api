@@ -3,13 +3,21 @@ const player = require('./player');
 const fight = require('./fight');
 const clothing = require('./clothing');
 
-const mutation = new GraphQLObjectType({
-  name: 'Mutation',
+const query = new GraphQLObjectType({
+  name: 'Query',
   fields: {
-    ...player,
-    ...fight,
-    ...clothing,
+    ...fight.queries,
+    ...clothing.queries,
   },
 });
 
-module.exports = mutation;
+const mutation = new GraphQLObjectType({
+  name: 'Mutation',
+  fields: {
+    ...player.mutations,
+    ...fight.mutations,
+    ...clothing.mutations,
+  },
+});
+
+module.exports = { query, mutation };

@@ -1,6 +1,7 @@
 const { GraphQLID, GraphQLList, GraphQLInt, GraphQLFloat, GraphQLString, GraphQLNonNull } = require('graphql');
-const playerType = require('../types/playerType');
-const Player = require('../models/player');
+const { playerType } = require('../gql-types/playerType');
+const { Player } = require('../db-models/player');
+const { validateAuth } = require('../utils');
 
 const addPlayer = {
   type: playerType,
@@ -13,7 +14,10 @@ const addPlayer = {
     equippedIds: { type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLID))) },
     boughtIds: { type: GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLID))) },
   },
-  resolve: (source, args, { isAuth }) => isAuth ? Player.create(args) : null,
+  resolve: (source, args, ctx) => {
+    validateAuth(ctx);
+    return Player.create(args);
+  }
 };
 
 const updatePlayer = {
@@ -27,16 +31,24 @@ const updatePlayer = {
     boughtIds: { type: GraphQLList(GraphQLID) },
     equippedIds: { type: GraphQLList(GraphQLID) },
   },
-  resolve: async (source, { nickname, ...args }, { isAuth }) => {
-    if (!isAuth) return null;
+  // resolve: async (source, { nickname, ...args }, { isAuth }) => {
+  resolve: async (source, args, ctx) => {
+    validateAuth(ctx);
+
+    const { nickname } = args;
+    let { comboTime } = args;
+
     const player = await Player.findOne({ nickname });
-    if (player.comboTime < args.comboTime) args.comboTime = player.comboTime;
-    await Player.findOneAndUpdate({ nickname }, args);
+    if (player.comboTime < comboTime) comboTime = player.comboTime;
+    await Player.findOneAndUpdate({ nickname }, { ...args, comboTime });
+
     return Object.assign(player, args);
   },
 };
 
-module.exports = {
+const mutations = {
   addPlayer,
   updatePlayer,
 };
+
+module.exports = { mutations };

@@ -9,4 +9,4 @@ const bodyPartType = new GraphQLEnumType({
   },
 });
 
-module.exports = bodyPartType;
+module.exports = { bodyPartType };

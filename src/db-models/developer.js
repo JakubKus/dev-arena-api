@@ -12,4 +12,4 @@ const developers = mongoose.Schema({
   weaponUrl: String,
 });
 
-module.exports = mongoose.model('developers', developers);
+module.exports = { Developer: mongoose.model('developers', developers) };

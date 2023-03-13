@@ -22,4 +22,4 @@ const enemyType = new GraphQLObjectType({
   },
 });
 
-module.exports = enemyType;
+module.exports = { enemyType };

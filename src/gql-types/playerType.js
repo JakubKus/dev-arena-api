@@ -16,4 +16,4 @@ const playerType = new GraphQLObjectType({
   },
 });
 
-module.exports = playerType;
+module.exports = { playerType };

@@ -11,4 +11,4 @@ const players = mongoose.Schema({
   boughtIds: Array.of(String),
 });
 
-module.exports = mongoose.model('players', players);
+module.exports = { Player: mongoose.model('players', players) };

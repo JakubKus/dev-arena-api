@@ -12,4 +12,4 @@ const enemies = mongoose.Schema({
   avatarUrl: String,
 });
 
-module.exports = mongoose.model('enemies', enemies);
+module.exports = { Enemy: mongoose.model('enemies', enemies) };
